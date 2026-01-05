@@ -33,6 +33,22 @@ SOLID prensipleri:
 
 Başka bir deyişle: **Bir sınıf sadece bir işten sorumlu olmalı.**
 
+### "Değişme Sebebi" Ne Demek?
+
+**Değişme sebebi**, bir sınıfın değiştirilmesini gerektirecek farklı iş gereksinimleridir.
+
+Örneğin aşağıdaki yanlış örnekteki `ArticleActivity` sınıfının **5 farklı değişme sebebi** var:
+
+- API endpoint değişirse → Network kodunu değiştirmen gerekir
+- Analytics servisi değişirse (Firebase → Mixpanel) → Analytics kodunu değiştirmen gerekir
+- Database şeması değişirse → Database kodunu değiştirmen gerekir
+- UI tasarımı değişirse → UI kodunu değiştirmen gerekir
+- Veri formatı değişirse → Parsing kodunu değiştirmen gerekir
+
+**Sorun:** Her değişiklik aynı sınıfa dokunuyor, bu da kod çakışmalarına ve test zorluğuna yol açıyor.
+
+**Çözüm:** Her sorumluluk için ayrı sınıf → Her sınıfın tek bir değişme sebebi olur.
+
 ### ❌ Yanlış Örnek (News App)
 
 ```kotlin
