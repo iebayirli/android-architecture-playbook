@@ -359,8 +359,11 @@ class PaymentProcessor {
 }
 
 // 5. Factory pattern ile ödeme metodunu al
+// Factory Pattern: String tip alıp doğru implementation'ı döndürür
 object PaymentMethodFactory {
     fun getPaymentMethod(type: String): PaymentMethod {
+        // Not: Factory'de when kullanmak sorun değil!
+        // Çünkü sadece BURASI değişiyor, PaymentProcessor değişmiyor ✅
         return when (type) {
             "CREDIT_CARD" -> CreditCardPayment()
             "PAYPAL" -> PayPalPayment()
@@ -413,6 +416,19 @@ processor.processPayment(paymentMethod, 100.0)
 > **"Alt sınıflar (child), üst sınıfın (parent) yerine kullanıldığında beklenmedik davranış göstermemeli"**
 
 Başka bir deyişle: **Parent interface/class beklendiği yerde child class kullanabilmeliyim, kod patlamadan.**
+
+### Basit Anlatım
+
+**Gerçek hayat örneği:**
+- Arabalar için `drive()` metodu tanımladın
+- Tesla ve benzinli araba ikisi de `Car` interface'ini implement ediyor
+- Hangi arabayı kullanırsan kullan, `drive()` çalışmalı (birinde patlamadan, diğerinde çalışmalı)
+- Eğer Tesla'da `drive()` exception fırlatıyor ama benzinli arabada fırlatmıyorsa → **LSP ihlali!**
+
+**Android örneği:**
+- `UserDataSource` interface'i var
+- `NetworkDataSource` ve `CacheDataSource` implement ediyor
+- İkisini de aynı yerde kullanabilmeliyim (biri exception fırlatıp diğeri fırlatmamalı)
 
 ### ❌ Yanlış Örnek (Data Source - Cache vs Network)
 
@@ -666,6 +682,37 @@ fun testLoadProducts() {
 
 ### ✅ Doğru Örnek (Interface Segregation)
 
+**Görsel:**
+
+```
+❌ Şişkin Interface:
+┌────────────────────────────┐
+│  ProductRepository         │
+│  (10 method)               │
+└────────────────────────────┘
+         │
+         │ Hepsini implement et
+         ▼
+┌────────────────────────────┐
+│ ProductListViewModel       │
+│ (Sadece 1 method kullanıyor)│
+└────────────────────────────┘
+Sorun: 9 gereksiz method!
+
+✅ Ayrılmış Interface'ler:
+┌────────────────┐  ┌────────────────┐  ┌────────────────┐
+│ ReadRepository │  │WriteRepository │  │ CartRepository │
+│  (3 method)    │  │  (3 method)    │  │  (3 method)    │
+└────────────────┘  └────────────────┘  └────────────────┘
+        │
+        │ Sadece ihtiyacın olanı al
+        ▼
+┌────────────────────────────┐
+│ ProductListViewModel       │
+│ (ReadRepository alıyor)    │
+└────────────────────────────┘
+```
+
 ```kotlin
 // 1. Küçük, spesifik interface'ler
 interface ProductReadRepository {
@@ -801,6 +848,24 @@ fun testLoadProducts() {
 > **"Üst seviye modüller, alt seviye modüllere bağımlı olmamalı. İkisi de soyutlamalara (abstraction) bağımlı olmalı."**
 
 Başka bir deyişle: **Concrete class yerine interface/abstract class'a bağımlı ol.**
+
+### "Üst Seviye" ve "Alt Seviye" Ne Demek?
+
+- **Üst Seviye (High-level)**: Business logic içeren modüller
+  - Örnek: ViewModel, UseCase, Repository Interface
+  - Framework'e uzak katmanlar (Pure Kotlin olabilir)
+  - **"Ne yapılacak"** sorusuna cevap verir
+
+- **Alt Seviye (Low-level)**: Teknik detaylar içeren modüller
+  - Örnek: Retrofit, Room, Firebase, SharedPreferences
+  - Framework'e yakın katmanlar (Android/3rd party kütüphanelere bağımlı)
+  - **"Nasıl yapılacak"** sorusuna cevap verir
+
+**Kural:** Üst seviye, alt seviyeye bağımlı olmamalı. İkisi de interface'e bağımlı olmalı.
+
+**Örnek:**
+- ❌ Yanlış: `ViewModel` → `Retrofit` (Üst seviye, alt seviyeye bağımlı)
+- ✅ Doğru: `ViewModel` → `Repository Interface` ← `RepositoryImpl (Retrofit)` (İkisi de interface'e bağımlı)
 
 ### ❌ Yanlış Örnek (News App)
 
@@ -961,31 +1026,44 @@ object DomainModule {
 
 ```
 ❌ Yanlış (Dependency Inversion YOK):
+
+    Üst Seviye
 ┌─────────────────┐
 │   ViewModel     │
-│  (Üst Seviye)   │
+│ (Business Logic)│
 └────────┬────────┘
          │ Depends on (Bağımlı)
          ▼
+    Alt Seviye
 ┌─────────────────┐
 │ RetrofitService │
-│  (Alt Seviye)   │
+│(Teknik Detay)   │
 └─────────────────┘
+
 Sorun: Üst seviye, alt seviyeye bağımlı!
+- ViewModel Retrofit'e bağımlı → Yarın Ktor'a geçemezsin
+- Test edilemez → Retrofit mock'lamak zor
+- Framework değişikliği ViewModel'i etkiler
 
 
 ✅ Doğru (Dependency Inversion VAR):
+
+    Üst Seviye
 ┌─────────────────┐         ┌──────────────────┐
 │   ViewModel     │────────▶│ ArticleRepository│
-│  (Üst Seviye)   │         │   (Interface)    │
-└─────────────────┘         └────────▲─────────┘
-                                     │ Implements
-                            ┌────────┴─────────┐
-                            │RepositoryImpl    │
-                            │  (Alt Seviye)    │
-                            └──────────────────┘
+│ (Business Logic)│         │   (Interface)    │◀─┐
+└─────────────────┘         └──────────────────┘  │
+                                                   │ Implements
+    Alt Seviye                                     │
+┌──────────────────┐                               │
+│RepositoryImpl    │───────────────────────────────┘
+│(Retrofit + Room) │
+└──────────────────┘
 
 Artık: Her iki modül de interface'e bağımlı!
+- ViewModel → Repository Interface (Abstraction'a bağımlı)
+- RepositoryImpl → Repository Interface (Abstraction'ı implement eder)
+- Bağımlılık yönü tersine çevrildi! (Dependency Inversion)
 ```
 
 ### Avantajlar
@@ -1076,13 +1154,13 @@ Kod yazarken kendin sor:
 
 ## Özet Tablo
 
-| Prensip                   | Ne Zaman Kullan            | Ne Zaman Kullanma             |
-| ------------------------- | -------------------------- | ----------------------------- |
-| **Single Responsibility** | Her zaman                  | Çok basit prototipler         |
-| **Open/Closed**           | Sık değişen tipler         | Sabit, nadiren değişen tipler |
-| **Liskov Substitution**   | Inheritance kullanıyorsan  | Inheritance yoksa             |
-| **Interface Segregation** | Büyük interface'ler        | Zaten küçükse (3-5 method)    |
-| **Dependency Inversion**  | Her zaman (orta+ projeler) | Tek ekranlı basit uygulamalar |
+| Prensip                   | Tek Cümle Özet                                   | Ne Zaman Kullan            | Ne Zaman Kullanma             |
+| ------------------------- | ------------------------------------------------ | -------------------------- | ----------------------------- |
+| **Single Responsibility** | Bir sınıf = bir sorumluluk                       | Her zaman                  | Çok basit prototipler         |
+| **Open/Closed**           | Yeni özellik = yeni class (mevcut kod değişmez)  | Sık değişen tipler         | Sabit, nadiren değişen tipler |
+| **Liskov Substitution**   | Parent yerine child koyunca kod patlamaz         | Inheritance kullanıyorsan  | Inheritance yoksa             |
+| **Interface Segregation** | Küçük interface > Şişkin interface               | Büyük interface'ler        | Zaten küçükse (3-5 method)    |
+| **Dependency Inversion**  | Interface'e bağlan, concrete class'a değil       | Her zaman (orta+ projeler) | Tek ekranlı basit uygulamalar |
 
 ---
 
