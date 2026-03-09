@@ -1,31 +1,55 @@
-# Android Security — Senior/Expert Seviye Kapsamlı Rehber
+# Android Security — Kapsamlı Rehber
 
 > **Kapsam:** Tehdit modelleme, statik/dinamik analiz, ağ güvenliği, kriptografi, uygulama sertleştirme, platform güvenliği, saldırı teknikleri ve savunma stratejileri. Güncel (2024–2025) teknikler ve araçlar.
 
 ---
 
-## İçindekiler
+## Öncelik & Kullanım Haritası
 
-1. [Android Güvenlik Mimarisi](#1-android-güvenlik-mimarisi)
-2. [Tehdit Modelleme (Threat Modeling)](#2-tehdit-modelleme)
-3. [Statik Analiz (SAST)](#3-statik-analiz-sast)
-4. [Dinamik Analiz (DAST)](#4-dinamik-analiz-dast)
-5. [Ağ Güvenliği & Man-in-the-Middle (MitM)](#5-ağ-güvenliği--man-in-the-middle-mitm)
-6. [Kriptografi](#6-kriptografi)
-7. [Kimlik Doğrulama & Yetkilendirme](#7-kimlik-doğrulama--yetkilendirme)
-8. [Data Storage Güvenliği](#8-data-storage-güvenliği)
-9. [IPC Güvenliği (Binder, Intent, Content Provider)](#9-ipc-güvenliği)
-10. [Kod Gizleme & Tersine Mühendislik Karşıtı](#10-kod-gizleme--tersine-mühendislik-karşıtı)
-11. [Root Detection & Integrity Checks](#11-root-detection--integrity-checks)
-12. [Supply Chain & Dependency Security](#12-supply-chain--dependency-security)
-13. [Platform Güvenlik Özellikleri](#13-platform-güvenlik-özellikleri)
-14. [Güvenli Geliştirme Pratiği (SSDLC)](#14-güvenli-geliştirme-pratiği-ssdlc)
-15. [Penetration Testing Metodolojisi](#15-penetration-testing-metodolojisi)
-16. [Araç Seti Referansı](#16-araç-seti-referansı)
+Döküman aşağıdaki öncelik sırasına göre düzenlenmiştir. Her bölümün önünde etiketi vardır:
+
+| Etiket           | Anlam                                                                |
+| ---------------- | -------------------------------------------------------------------- |
+| 🔴 **CORE**      | Her Android developer'ın bilmesi gereken, her PR'da karşına çıkan    |
+| 🟠 **IMPORTANT** | Önemli ama daha az sık; derinlemesine bilinmesi beklenir             |
+| 🟡 **USEFUL**    | Bilmek seni farklılaştırır; pentest/audit senaryolarında gerekli     |
+| ⚪ **REFERENCE** | Başvuru kaynağı; her şeyi ezberlemek gerekmez, nerede bulacağını bil |
 
 ---
 
-## 1. Android Güvenlik Mimarisi
+## İçindekiler
+
+### 🔴 CORE — Her Zaman, Her Projede
+
+1. [Android Güvenlik Mimarisi](#1-android-güvenlik-mimarisi) — Temeller, sandbox, permission modeli
+2. [Ağ Güvenliği & Man-in-the-Middle (MitM)](#5-ağ-güvenliği--man-in-the-middle-mitm) — SSL Pinning, MitM kurulumu, bypass teknikleri
+3. [IPC Güvenliği (Binder, Intent, Content Provider)](#9-ipc-güvenliği) — Exported components, intent injection, WebView
+4. [Kriptografi](#6-kriptografi) — Doğru AES/GCM, Android Keystore, yaygın hatalar
+5. [Data Storage Güvenliği](#8-data-storage-güvenliği) — EncryptedSharedPreferences, SQLCipher, log sızıntısı
+6. [CI/CD & Güvenli Geliştirme Pratiği (SSDLC)](#14-güvenli-geliştirme-pratiği-ssdlc) — Semgrep, Dependency Check, kod review checklist
+
+### 🟠 IMPORTANT — Senior Seviyede Beklenen
+
+7. [Dinamik Analiz / DAST — Frida & Objection](#4-dinamik-analiz-dast) — Runtime hook, bypass teknikleri
+8. [Root Detection & Integrity Checks](#11-root-detection--integrity-checks) — Play Integrity API, emülatör tespiti
+9. [Kimlik Doğrulama & Yetkilendirme](#7-kimlik-doğrulama--yetkilendirme) — BiometricPrompt, OAuth/PKCE, token yönetimi
+10. [Supply Chain & Dependency Security](#12-supply-chain--dependency-security) — CVE tarama, SDK güvenliği
+
+### 🟡 USEFUL — Seni Farklılaştıran
+
+11. [Statik Analiz / SAST](#3-statik-analiz-sast) — APK anatomisi, jadx/apktool, MobSF
+12. [Penetration Testing Metodolojisi](#15-penetration-testing-metodolojisi) — 5 fazlı pentest, Drozer, bulgu raporlama
+13. [Kod Gizleme & Tersine Mühendislik Karşıtı](#10-kod-gizleme--tersine-mühendislik-karşıtı) — R8 limitleri, DexGuard, anti-tamper
+
+### ⚪ REFERENCE — Gerektiğinde Bak
+
+14. [Tehdit Modelleme](#2-tehdit-modelleme) — STRIDE, DREAD, OWASP Top 10
+15. [Platform Güvenlik Özellikleri](#13-platform-güvenlik-özellikleri) — Android 12–15 değişiklikleri, pKVM
+16. [Araç Seti Referansı](#16-araç-seti-referansı) — Tüm araçlar, kurulum scripti
+
+---
+
+## 🔴 CORE 1 — Android Güvenlik Mimarisi
 
 ### 1.1 Katmanlı Savunma Modeli
 
@@ -89,7 +113,7 @@ adb shell ps -Z | grep com.example
 
 ---
 
-## 2. Tehdit Modelleme
+## ⚪ REFERENCE 2 — Tehdit Modelleme
 
 ### 2.1 STRIDE Modeli (Android Bağlamında)
 
@@ -141,7 +165,7 @@ Her tehdit için: **D**amage + **R**eproducibility + **E**xploitability + **A**f
 
 ---
 
-## 3. Statik Analiz (SAST)
+## 🟡 USEFUL 3 — Statik Analiz (SAST)
 
 ### 3.1 APK Anatomisi
 
@@ -270,7 +294,7 @@ semgrep --config "p/android" --output results.json .
 
 ---
 
-## 4. Dinamik Analiz (DAST)
+## 🟠 IMPORTANT 4 — Dinamik Analiz (DAST)
 
 ### 4.1 Test Ortamı Kurulumu
 
@@ -465,7 +489,7 @@ adb pull /data/local/tmp/heap.hprof
 
 ---
 
-## 5. Ağ Güvenliği & Man-in-the-Middle (MitM)
+## 🔴 CORE 2 — Ağ Güvenliği & Man-in-the-Middle (MitM)
 
 ### 5.1 MitM Test Ortamı Kurma
 
@@ -738,7 +762,7 @@ fun signRequest(url: String, body: String, secret: ByteArray): String {
 
 ---
 
-## 6. Kriptografi
+## 🔴 CORE 4 — Kriptografi
 
 ### 6.1 Kriptografi Hataları — Top Sorunlar
 
@@ -880,7 +904,7 @@ val encryptedFile = EncryptedFile.Builder(
 
 ---
 
-## 7. Kimlik Doğrulama & Yetkilendirme
+## 🟠 IMPORTANT 3 — Kimlik Doğrulama & Yetkilendirme
 
 ### 7.1 Biyometrik Kimlik Doğrulama
 
@@ -976,7 +1000,7 @@ authService.performAuthorizationRequest(authRequest, pendingIntent, customTabInt
 
 ---
 
-## 8. Data Storage Güvenliği
+## 🔴 CORE 5 — Data Storage Güvenliği
 
 ### 8.1 Depolama Seçenekleri ve Güvenlik Profilleri
 
@@ -1068,7 +1092,7 @@ Handler(Looper.getMainLooper()).postDelayed({
 
 ---
 
-## 9. IPC Güvenliği
+## 🔴 CORE 3 — IPC Güvenliği (Binder, Intent, Content Provider, WebView)
 
 ### 9.1 Intent Güvenliği
 
@@ -1272,7 +1296,9 @@ class SafeJsBridge(private val context: Context) {
 
 ---
 
-## 10. Kod Gizleme & Tersine Mühendislik Karşıtı
+## 🟡 USEFUL 3 — Kod Gizleme & Tersine Mühendislik Karşıtı
+
+> **Gerçekçi Not:** R8/ProGuard bir **optimizasyon** aracıdır, güvenlik aracı değil. Yan etkisi olarak isim obfuscation yapar ama logic tamamen okunabilir kalır. jadx ile decompile edince `a.b.c()` isimleri görürsün, mantık aynıdır. Deneyimli bir reverse engineer için R8 bypass'ı 30 dakika. Gerçek koruma için DexGuard/iXGuard (ücretli) gerekir. **Sonuç:** Doğru `-keep` kurallarını yazmayı bil, limitleri anla — derinlemesine öğrenmeye gerek yok.
 
 ### 10.1 ProGuard / R8 Konfigürasyonu
 
@@ -1413,7 +1439,7 @@ fun isBeingTraced(): Boolean {
 
 ---
 
-## 11. Root Detection & Integrity Checks
+## 🟠 IMPORTANT 2 — Root Detection & Integrity Checks
 
 ### 11.1 Root Detection Stratejileri
 
@@ -1550,7 +1576,7 @@ private fun checkSensors(): Boolean {
 
 ---
 
-## 12. Supply Chain & Dependency Security
+## 🟠 IMPORTANT 4 — Supply Chain & Dependency Security
 
 ### 12.1 Dependency Vulnerability Scanning
 
@@ -1627,7 +1653,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 
 ---
 
-## 13. Platform Güvenlik Özellikleri
+## ⚪ REFERENCE 2 — Platform Güvenlik Özellikleri
 
 ### 13.1 Android 12-15 Güvenlik Değişiklikleri
 
@@ -1698,7 +1724,9 @@ val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
 
 ---
 
-## 14. Güvenli Geliştirme Pratiği (SSDLC)
+## 🔴 CORE 6 — CI/CD & Güvenli Geliştirme Pratiği (SSDLC)
+
+> **Neden CORE?** Diğer bölümler "açığı nasıl bulursun" sorusunu cevaplar. Bu bölüm "açığın production'a gitmesini nasıl engellersin" sorusunu cevaplar. Google gibi şirketler ikincisini daha çok önemser. **Minimum yapılacak:** Semgrep + OWASP Dependency Check + Gitleaks üçlüsünü bir kez gerçek projede kur, nasıl çalıştığını gör.
 
 ### 14.1 CI/CD Entegrasyonu
 
@@ -1787,7 +1815,7 @@ Penetration     → Manuel red-team, Frida/Drozer ile
 
 ---
 
-## 15. Penetration Testing Metodolojisi
+## 🟡 USEFUL 2 — Penetration Testing Metodolojisi
 
 ### 15.1 OWASP MSTG / MASVS Çerçevesi
 
@@ -1920,7 +1948,7 @@ Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
 
 ---
 
-## 16. Araç Seti Referansı
+## ⚪ REFERENCE 3 — Araç Seti Referansı
 
 ### 16.1 Statik Analiz Araçları
 
