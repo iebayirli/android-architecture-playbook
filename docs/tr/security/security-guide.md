@@ -2,18 +2,22 @@
 
 > **Kapsam:** Tehdit modelleme, statik/dinamik analiz, ağ güvenliği, kriptografi, uygulama sertleştirme, platform güvenliği, saldırı teknikleri ve savunma stratejileri. Güncel (2024–2025) teknikler ve araçlar.
 
+> **⚡ Hızlı Başlangıç:** Production-ready uygulamalar için temel güvenlik gereksinimleri ve kod örnekleri için [Core Security Practices](./core-security-practices.md) dokümanına bakın.
+
 ---
 
 ## Öncelik & Kullanım Haritası
 
-Döküman aşağıdaki öncelik sırasına göre düzenlenmiştir. Her bölümün önünde etiketi vardır:
+Bu döküman **detaylı güvenlik analizi, pentest teknikleri ve ileri seviye konular** içerir. Öncelik sırasına göre düzenlenmiştir:
 
-| Etiket           | Anlam                                                                |
-| ---------------- | -------------------------------------------------------------------- |
-| 🔴 **CORE**      | Her Android developer'ın bilmesi gereken, her PR'da karşına çıkan    |
-| 🟠 **IMPORTANT** | Önemli ama daha az sık; derinlemesine bilinmesi beklenir             |
-| 🟡 **USEFUL**    | Bilmek seni farklılaştırır; pentest/audit senaryolarında gerekli     |
-| ⚪ **REFERENCE** | Başvuru kaynağı; her şeyi ezberlemek gerekmez, nerede bulacağını bil |
+| Etiket           | Anlam                                                                          |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 🔴 **CORE**      | Production gereksinimleri → [Core Security Practices](./core-security-practices.md) |
+| 🟠 **IMPORTANT** | Önemli ama daha az sık; derinlemesine bilinmesi beklenir                       |
+| 🟡 **USEFUL**    | Bilmek seni farklılaştırır; pentest/audit senaryolarında gerekli               |
+| ⚪ **REFERENCE** | Başvuru kaynağı; her şeyi ezberlemek gerekmez, nerede bulacağını bil           |
+
+> **Not:** 🔴 CORE işaretli bölümler artık ayrı bir dokümanda. Production uygulamaları için kod örnekleri ve best practice'ler için [Core Security Practices](./core-security-practices.md) dokümanını inceleyin.
 
 ---
 
